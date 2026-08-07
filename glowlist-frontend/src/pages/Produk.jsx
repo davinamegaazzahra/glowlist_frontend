@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom"
 
 export default function Produk() {
     const [produk, setProduk] = useState([]);
@@ -29,6 +30,9 @@ export default function Produk() {
         <div className="container mt-4">
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h2>Daftar Produk GlowList Kazza 💖</h2>
+                <Link to="/produk/tambah" className="btn btn-primary">
+                    + Tambah Produk
+                </Link>
             </div>
 
             <table className="table table-bordered table-striped">
@@ -38,6 +42,8 @@ export default function Produk() {
                         <th>Judul</th>
                         <th>Deskripsi</th>
                         <th>Harga</th>
+                        <th>Nama File</th>
+                        <th>Tanggal Input</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -48,6 +54,8 @@ export default function Produk() {
                                 <td>{item.judul}</td>
                                 <td>{item.deskripsi}</td>
                                 <td>Rp. {item.harga}</td>
+                                <td>{item.nama_file}</td>
+                                <td>{item.tgl_input}</td>
                             </tr>
                         ))
                     ) : (
