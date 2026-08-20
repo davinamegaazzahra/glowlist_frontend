@@ -16,7 +16,7 @@ export default function EditProduk() {
 
     useEffect(() => {
         fetch(`http://localhost:5000/produk/${id}`)
-            .then((res) => res.json())
+            .then((res) => res.json()) 
             .then((data) => {
                 setFormData(data[0]); // ambil data pertama hasil query
                 setLoading(false);
