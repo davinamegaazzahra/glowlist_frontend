@@ -1,7 +1,9 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 
-export default function AddProduk() {
+export default function EditProduk() {
+    const { id } = useParams();
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         judul: "",
         deskripsi: "",
@@ -10,48 +12,49 @@ export default function AddProduk() {
         nama_file: "",
         tgl_input: "",
     });
+    const [loading, setLoading] = useState(true);
 
-    const navigate = useNavigate();
-
+    useEffect(() => {
+        fetch(`http://localhost:5000/produk/${id}`)
+            .then((res) => res.json())
+            .then((data) => {
+                setFormData(data[0]); // ambil data pertama hasil query
+                setLoading(false);
+            })
+            .catch((err) => console.error(err));
+    }, [id]);
+    
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            const res = await fetch("http://localhost:5000/produk", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
-            });
-            if (res.ok) {
-                alert("Produk berhasil ditambahkan!");
-                navigate("/produk");
-            } else {
-                const data = await res.json();
-                alert(data.message || "Gagal menambah produk");
-            }
-        } catch (err) {
-            console.error("Error:", err);
-            alert("Terjadi kesalahan saat menambah produk");
-        }
+        await fetch(`http://localhost:5000/produk/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData)
+        });
+        alert("Produk berhasil diperbarui!");
+        navigate("/produk");
     };
+
+    if (loading) {
+        return <div className="container mt-4">Loading Ngapunten Lama...</div>;
+    }
 
     return (
         <div className="container mt-4">
-            <h2 className="mb-3">Tambah Produk 🛠</h2>
-            <form onSubmit={handleSubmit} className="card p-4 shadow-sm">
+            <h2>Edit Produk</h2>
+            <form onSubmit={handleSubmit} className="mt-3">
                 <div className="mb-3">
-                    <label className="form-label">Judul Produk</label>
+                    <label className="form-label">Judul</label>
                     <input
                         type="text"
                         name="judul"
                         value={formData.judul}
                         onChange={handleChange}
                         className="form-control"
-                        placeholder="Masukkan nama produk"
-                        required
                     />
                 </div>
 
@@ -79,7 +82,6 @@ export default function AddProduk() {
                     />
                 </div>
 
-
                 <div className="mb-3">
                     <label className="form-label">Kategori</label>
                     <select
@@ -89,15 +91,14 @@ export default function AddProduk() {
                         onChange={handleChange}
                         className="form-control"
                         placeholder="Masukkan Kategori"
-                        >
-                            <option value="">--- Pilih Kategori---</option>
-                            <option value="1">Facial Wash</option>
-                            <option value="2">Toner</option>
-                            <option value="3">Serum</option>
-                            <option value="4">Mask</option>
-                        </select>
+                    >
+                        <option value="">--- Pilih Kategori---</option>
+                        <option value="1">Facial Wash</option>
+                        <option value="2">Toner</option>
+                        <option value="3">Serum</option>
+                        <option value="4">Mask</option>
+                    </select>
                 </div>
-
 
                 <div className="mb-3">
                     <label className="form-label">Nama File</label>
@@ -125,9 +126,8 @@ export default function AddProduk() {
                     />
                 </div>
 
-                <button type="submit" className="btn btn-success">
-                    Simpan
-                </button>
+                <button type="submit" className="btn btn-success me-2">Simpan Perubahan</button>
+                <button type="button" className="btn btn-secondary" onClick={() => navigate("/produk")}>Batal</button>
             </form>
         </div>
     );
