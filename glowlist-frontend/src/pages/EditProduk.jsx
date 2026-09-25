@@ -13,17 +13,72 @@ export default function EditProduk() {
         tgl_input: "",
     });
     const [loading, setLoading] = useState(true);
+    const [kategori, setKategori] = useState([]);
 
     useEffect(() => {
-        fetch(`http://localhost:5000/produk/${id}`)
-            .then((res) => res.json()) 
+         fetch(`http://localhost:5000/produk/${id}`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+         })
+         .then((res) => {
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+         })
             .then((data) => {
-                setFormData(data[0]); // ambil data pertama hasil query
+                console.log("Data produk:", data);
+
+                // Kalau API mengembalikan array
+                if (Array.isArray(data)) {
+                    setFormData(data[0]);
+                } else {
+                    //Kalau API langsung mengembalikan object
+                    setFormData(data);
+                }
+
                 setLoading(false);
             })
-            .catch((err) => console.error(err));
-    }, [id]);
-    
+            .catch((err) => {
+                console.error("Gagal mengambil produk:", err);
+            setLoading(false)
+        });
+    }, []);
+
+    //Mengambil data kategori dari tabel kategori
+    useEffect(() => {
+        fetch("http://localhost:5000/kategori", {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+        })
+        .then((res) => {
+            console.log("Status kategori:", res.status);
+
+            if (!res.ok) {
+                throw new Error(`HTTP Error: ${res.status}`);
+            }
+
+            return res.json();
+        })
+        .then((data) => {
+            console.log("Data kategori:", data);
+
+            if (Array.isArray(data)) {
+                setKategori(data);
+            } else if (Array.isArray(data.data)) {
+                setKategori(data.data);
+            } else {
+                console.error("Format data kategori tidak sesuai:", data);
+                setKategori([]);
+            }
+        })
+        .catch((err) => {
+            console.error("Gagal mengambil kategori:", err);
+        });
+    }, []);
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -34,9 +89,13 @@ export default function EditProduk() {
         if (!window.confirm("Yakin ingin memperbarui produk ini?")) {
             return;
         }
+        
         await fetch(`http://localhost:5000/produk/${id}`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
             body: JSON.stringify(formData)
         });
         alert("Produk berhasil diperbarui!");
@@ -88,19 +147,24 @@ export default function EditProduk() {
 
                 <div className="mb-3">
                     <label className="form-label">Kategori</label>
+
                     <select
-                        type="number"
                         name="id_kategori"
                         value={formData.id_kategori}
                         onChange={handleChange}
                         className="form-control"
-                        placeholder="Masukkan Kategori"
+                        required
                     >
-                        <option value="">--- Pilih Kategori---</option>
-                        <option value="1">Facial Wash</option>
-                        <option value="2">Toner</option>
-                        <option value="3">Serum</option>
-                        <option value="4">Mask</option>
+                        <option value="">--- Pilih Kategori ---</option>
+                        
+                        {kategori.map((k) => (
+                            <option
+                            key={k.id_kategori}
+                            value={k.id_kategori}
+                            >
+                                {k.kategori}
+                            </option>
+                        ))}
                     </select>
                 </div>
 

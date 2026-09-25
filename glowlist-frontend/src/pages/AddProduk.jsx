@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function AddProduk() {
@@ -11,6 +11,15 @@ export default function AddProduk() {
         tgl_input: "",
     });
 
+    const [kategori, setKategori] = useState([])
+
+    useEffect(() => {
+        fetch("http://localhost:5000/kategori")
+        .then(res => res.json())
+        .then(data => setKategori(data))
+        .catch(err => console.log(err))
+    }, []);
+
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -22,7 +31,9 @@ export default function AddProduk() {
         try {
             const res = await fetch("http://localhost:5000/produk", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                 },
                 body: JSON.stringify(formData),
             });
             if (res.ok) {
@@ -88,7 +99,7 @@ export default function AddProduk() {
                         value={formData.id_kategori}
                         onChange={handleChange}
                         className="form-control"
-                        placeholder="Masukkan Kategori"
+                        placeholder="Masukkan ID Kategori"
                         >
                             <option value="">--- Pilih Kategori---</option>
                             <option value="1">Facial Wash</option>
